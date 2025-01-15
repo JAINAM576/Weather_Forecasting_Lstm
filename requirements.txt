@@ -1,0 +1,9 @@
+numpy==1.26.4
+matplotlib==3.7.1
+tensorflow==2.17.0
+keras==3.4.1
+sklearn==1.2.2
+pandas==2.1.4
+meteostat==1.6.8
+# datetime does not have a __version__ attribute
+# pickle does not have a __version__ attribute
