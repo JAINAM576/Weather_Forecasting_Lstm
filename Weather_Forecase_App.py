@@ -68,79 +68,178 @@ def temperature_insights(data):
 def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourly"):
         
    if freq=="Hourly":
-        scaler=pkl.load(open(r"Models/Hourly/StandardScaler/StandardScaler_hourly1.pkl","rb"))
-        hourly_model=load_model(r"Models/Hourly/StandardScaler/temperature_best_Standard_Hourly1.keras")
+        scaler=pkl.load(open(r"Final_Models/Hourly/StandardScaler/StandardScaler_hourly.pkl","rb"))
+        hourly_model=load_model(r"Models/Hourly/StandardScaler/temperature_Standard.keras")
 
-        data_for_model=scaler.transform(np.array(data_for_model["temp"].values[:100]).reshape(-1,1))
-        data_for_model=data_for_model.reshape(1,100,1)
-        data_for_model=data_for_model.flatten()
+        data_for_model.reset_index(inplace=True)
+        target_column="temp"
+
+        data_for_model=data_for_model[["time",target_column]]
+
+        data_for_model['month'] = data_for_model['time'].dt.month
+        data_for_model['hour'] = data_for_model['time'].dt.hour  
+        data_for_model["dayofyear"]=data_for_model["time"].dt.dayofyear
+
+        seasonal_mean = data_for_model.groupby(['month', 'hour'])["temp"].transform('mean') 
+        data_for_model[target_column] = data_for_model[target_column].fillna(seasonal_mean) 
 
 
-        output=[]
+
+        data_for_model=data_for_model[[target_column,"month","hour","dayofyear"]]
+
+        data_for_model=scaler.transform(np.array(data_for_model.values[:100]).reshape(-1,1))
+        data_for_model=data_for_model.reshape(100,4)
+
+
+
+
+        output = []
+        last_row = data_for_model.iloc[-1]
+
+
+        base_date = pd.to_datetime(last_row['time'])
+
         for i in range(forecast_duration):
-            print(data_for_model)
+            future_datetime = base_date + timedelta(hours=i + 1)
+            
+            hour = future_datetime.hour
+            day_of_year = future_datetime.timetuple().tm_yday
+            month = future_datetime.month
 
-            prediction = hourly_model.predict(np.array(data_for_model).reshape(-1, window_size, 1))
-            prediction = prediction + np.random.normal(0, 0.05)
-
+            prediction = hourly_model.predict(data_for_model.reshape(-1, window_size, 4), verbose=1)
+            predicted_temp = prediction[0][0]
             output.append(prediction)
-            data_for_model = np.append(data_for_model[1:], prediction)
+
+            next_input = np.array([predicted_temp, month, hour, day_of_year])
+            next_input_scaled = scaler.transform(next_input.reshape(-1, 1))
+            data_for_model = np.vstack([data_for_model[1:], next_input_scaled.reshape(1, 4)])
+
 
 
         return  list(np.array(output).flatten())
    elif freq=="Daily":
-        scaler_min = pkl.load(open("Models/Daily/temperature_best_min/StandardScaler/StandardScaler_min.pkl", "rb"))
-        daily_min_model = load_model("Models/Daily/temperature_best_min/StandardScaler/temperature_best_min_StandardScaler.keras")
+        scaler_min = pkl.load(open("Final_Models/Daily/temp_min/StandardScaler_min.pkl", "rb"))
+        daily_min_model = load_model("Final_Models/Daily/temp_min/temperature_min_Standard.keras")
         
-        scaler_max = pkl.load(open("Models/Daily/temperature_best_max/StandardScaler/StandardScaler.pkl", "rb"))
-        daily_max_model = load_model("Models/Daily/temperature_best_max/StandardScaler/temperature_best_max_StandardScaler.keras")
+        scaler_max = pkl.load(open("Final_Models/Daily/temp_max/StandardScaler.pkl", "rb"))
+        daily_max_model = load_model("Final_Models/Daily/temp_max/temperature_max_Done5_Standard.keras")
         
-        scaler_avg = pkl.load(open("Models/Daily/temperature_best_avg/StandardScaler/MinMax_Avg.pkl", "rb"))
-        daily_avg_model = load_model("Models/Daily/temperature_best_avg/StandardScaler/temperature_best_avg.keras")
+        scaler_avg = pkl.load(open("Final_Models/Daily/temp_avg/StandardScaler_avg.pkl", "rb"))
+        daily_avg_model = load_model("Final_Models/Daily/temp_avg/temperature_avg_Standard.keras")
+
+        data_for_model.reset_index(inplace=True)
+
+        data_for_model['month'] = data_for_model['time'].dt.month
+        data_for_model['dayofyear'] = data_for_model['time'].dt.dayofyear  
+
+
+        # for temp_min column 
+        data_for_model_min=data_for_model.copy()
+
+        seasonal_mean = data_for_model_min.groupby('month')["tmin"].transform('mean') 
+        data_for_model_min["tmin"] = data_for_model_min["tmin"].fillna(seasonal_mean) 
+        data_for_model_min['sin_day_of_year'] = np.round(np.sin(2 * np.pi * data_for_model_min['dayofyear'] / 365),4)
+        data_for_model_min['cos_day_of_year'] = np.round(np.cos(2 * np.pi * data_for_model_min['dayofyear'] / 365),4)
+
+        data_for_model_min=data_for_model_min[["tmin","sin_day_of_year","cos_day_of_year","month"]]
        
-        data_for_model_min=scaler_min.transform(np.array(data_for_model["tmin"].values).reshape(-1,1))
-        data_for_model_max=scaler_max.transform(np.array(data_for_model["tmax"].values).reshape(-1,1))
-        data_for_model_avg=scaler_avg.transform(np.array(data_for_model["tavg"].values).reshape(-1,1))
+        # for temp_max column
+        data_for_model_max=data_for_model.copy()
 
-        data_for_model_min=data_for_model_min.reshape(1,100,1)
-        data_for_model_min=data_for_model_min.flatten()
+        seasonal_mean = data_for_model_max.groupby('month')["tmax"].transform('mean') 
+        data_for_model_max["tmax"] = data_for_model_max["tmax"].fillna(seasonal_mean) 
+        data_for_model_max['sin_day_of_year'] = np.round(np.sin(2 * np.pi * data_for_model_max['dayofyear'] / 365),4)
+        data_for_model_max['cos_day_of_year'] = np.round(np.cos(2 * np.pi * data_for_model_max['dayofyear'] / 365),4)
 
-        data_for_model_max=data_for_model_max.reshape(1,100,1)
-        data_for_model_max=data_for_model_max.flatten()
-
-        data_for_model_avg=data_for_model_avg.reshape(1,100,1)
-        data_for_model_avg=data_for_model_avg.flatten()
+        data_for_model_max=data_for_model_max[["tmax","sin_day_of_year","cos_day_of_year","month"]]
 
 
+        # for temp_avg column 
+        data_for_model_avg=data_for_model.copy()
+
+        seasonal_mean = data_for_model_avg.groupby('month')["tavg"].transform('mean') 
+        data_for_model_avg["tavg"] = data_for_model_avg["tavg"].fillna(seasonal_mean) 
+        data_for_model_avg['sin_day_of_year'] = np.round(np.sin(2 * np.pi * data_for_model_avg['dayofyear'] / 365),4)
+        data_for_model_avg['cos_day_of_year'] = np.round(np.cos(2 * np.pi * data_for_model_avg['dayofyear'] / 365),4)
+
+        data_for_model_avg=data_for_model_avg[["tavg","sin_day_of_year","cos_day_of_year","month"]]
+
+        # done
+
+        # Apply the transformation
+        
+        data_for_model_min=scaler_min.transform(np.array(data_for_model_min.values).reshape(-1,1))
+        data_for_model_max=scaler_max.transform(np.array(data_for_model_max.values).reshape(-1,1))
+        data_for_model_avg=scaler_avg.transform(np.array(data_for_model_avg.values).reshape(-1,1))
+
+
+        # reshaping the data
+        data_for_model_min=data_for_model_min.reshape(100,4)
+        data_for_model_max=data_for_model_max.reshape(100,4)
+        data_for_model_avg=data_for_model_avg.reshape(100,4)
+
+
+        last_row = data_for_model.iloc[-1]
+        base_date = pd.to_datetime(last_row['time'])
+        
+        # for predicting of output of temp min
         output_min=[]
         for i in range(forecast_duration):
+            future_date = base_date + timedelta(days=i + 1)
+            day_of_year = future_date.timetuple().tm_yday
+            sin_day = np.round(np.sin(2 * np.pi * day_of_year / 365),4)
+            cos_day = np.round(np.cos(2 * np.pi * day_of_year / 365),4)
+            month = future_date.month
         
-
-            prediction = daily_min_model.predict(np.array(data_for_model_min).reshape(-1, window_size, 1))
-            prediction = prediction + np.random.normal(0, 0.05)
             
+            prediction = daily_min_model.predict(data_for_model.reshape(-1, window_size, 4), verbose=1)
+            predicted_temp = prediction[0][0]
             output_min.append(prediction)
 
-            data_for_model_min = np.append(data_for_model_min[1:], prediction)
+            
+            next_input = np.array([predicted_temp, sin_day, cos_day, month])
+            next_input_scaled = scaler_min.transform(next_input.reshape(-1,1))
+            data_for_model = np.vstack([data_for_model[1:], next_input_scaled.reshape(1,4)])    
+
+
+        # for predicting of output of temp max
 
         output_max=[]
         for i in range(forecast_duration):
-       
-
-            prediction = daily_max_model.predict(np.array(data_for_model_max).reshape(-1, window_size, 1))
-            prediction = prediction + np.random.normal(0, 0.05)
+            future_date = base_date + timedelta(days=i + 1)
+            day_of_year = future_date.timetuple().tm_yday
+            sin_day = np.round(np.sin(2 * np.pi * day_of_year / 365),4)
+            cos_day = np.round(np.cos(2 * np.pi * day_of_year / 365),4)
+            month = future_date.month
+        
             
+            prediction = daily_max_model.predict(data_for_model.reshape(-1, window_size, 4), verbose=1)
+            predicted_temp = prediction[0][0]
             output_max.append(prediction)
-            data_for_model_max = np.append(data_for_model_max[1:], prediction)
 
+            
+            next_input = np.array([predicted_temp, sin_day, cos_day, month])
+            next_input_scaled = scaler_max.transform(next_input.reshape(-1,1))
+            data_for_model = np.vstack([data_for_model[1:], next_input_scaled.reshape(1,4)])   
+        
+        # for predicting of output of temp avg
         output_avg=[]
         for i in range(forecast_duration):
-
-            prediction = daily_avg_model.predict(np.array(data_for_model_avg).reshape(-1, window_size, 1))
-            prediction = prediction + np.random.normal(0, 0.05)
+            future_date = base_date + timedelta(days=i + 1)
+            day_of_year = future_date.timetuple().tm_yday
+            sin_day = np.round(np.sin(2 * np.pi * day_of_year / 365),4)
+            cos_day = np.round(np.cos(2 * np.pi * day_of_year / 365),4)
+            month = future_date.month
+        
             
+            prediction = daily_avg_model.predict(data_for_model.reshape(-1, window_size, 4), verbose=1)
+            predicted_temp = prediction[0][0]
             output_avg.append(prediction)
-            data_for_model_avg = np.append(data_for_model_avg[1:], prediction)
+
+            
+            next_input = np.array([predicted_temp, sin_day, cos_day, month])
+            next_input_scaled = scaler_avg.transform(next_input.reshape(-1,1))
+            data_for_model = np.vstack([data_for_model[1:], next_input_scaled.reshape(1,4)])  
 
 
         return  list(np.array(output_min).flatten()),list(np.array(output_max).flatten()),list(np.array(output_avg).flatten())
@@ -213,7 +312,7 @@ page = st.sidebar.radio("Go to", ["Hourly Temperature", "Daily Temperature", "Ho
 def calculate_dates(freq="hourly"):
     end_date = datetime.now()  
     if freq == "hourly":
-        start_date = end_date - timedelta(hours=105) 
+        start_date = end_date - timedelta(hours=100) 
     elif freq == "daily":
         start_date = end_date - timedelta(days=100)  
     else:
