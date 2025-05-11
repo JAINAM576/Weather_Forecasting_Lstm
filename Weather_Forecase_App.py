@@ -68,8 +68,8 @@ def temperature_insights(data):
 def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourly"):
         
    if freq=="Hourly":
-        scaler=pkl.load(open(r"Final_Models/Hourly/StandardScaler/StandardScaler_hourly.pkl","rb"))
-        hourly_model=load_model(r"Models/Hourly/StandardScaler/temperature_Standard.keras")
+        scaler=pkl.load(open(r"Final_Models/Hourly/Standard_Scaler/StandardScaler_hourly.pkl","rb"))
+        hourly_model=load_model(r"Models/Hourly/Standard_Scaler/temperature_Standard.keras")
 
         data_for_model.reset_index(inplace=True)
         target_column="temp"
