@@ -193,14 +193,14 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
             month = future_date.month
         
             
-            prediction = daily_min_model.predict(data_for_model.reshape(-1, window_size, 4), verbose=1)
+            prediction = daily_min_model.predict(data_for_model_min.reshape(-1, window_size, 4), verbose=1)
             predicted_temp = prediction[0][0]
             output_min.append(prediction)
 
             
             next_input = np.array([predicted_temp, sin_day, cos_day, month])
             next_input_scaled = scaler_min.transform(next_input.reshape(-1,1))
-            data_for_model = np.vstack([data_for_model[1:], next_input_scaled.reshape(1,4)])    
+            data_for_model_min = np.vstack([data_for_model_min[1:], next_input_scaled.reshape(1,4)])    
 
 
         # for predicting of output of temp max
@@ -214,14 +214,14 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
             month = future_date.month
         
             
-            prediction = daily_max_model.predict(data_for_model.reshape(-1, window_size, 4), verbose=1)
+            prediction = daily_max_model.predict(data_for_model_max.reshape(-1, window_size, 4), verbose=1)
             predicted_temp = prediction[0][0]
             output_max.append(prediction)
 
             
             next_input = np.array([predicted_temp, sin_day, cos_day, month])
             next_input_scaled = scaler_max.transform(next_input.reshape(-1,1))
-            data_for_model = np.vstack([data_for_model[1:], next_input_scaled.reshape(1,4)])   
+            data_for_model_max = np.vstack([data_for_model_max[1:], next_input_scaled.reshape(1,4)])   
         
         # for predicting of output of temp avg
         output_avg=[]
@@ -233,14 +233,14 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
             month = future_date.month
         
             
-            prediction = daily_avg_model.predict(data_for_model.reshape(-1, window_size, 4), verbose=1)
+            prediction = daily_avg_model.predict(data_for_model_avg.reshape(-1, window_size, 4), verbose=1)
             predicted_temp = prediction[0][0]
             output_avg.append(prediction)
 
             
             next_input = np.array([predicted_temp, sin_day, cos_day, month])
             next_input_scaled = scaler_avg.transform(next_input.reshape(-1,1))
-            data_for_model = np.vstack([data_for_model[1:], next_input_scaled.reshape(1,4)])  
+            data_for_model_avg = np.vstack([data_for_model_avg[1:], next_input_scaled.reshape(1,4)])  
 
 
         return  list(np.array(output_min).flatten()),list(np.array(output_max).flatten()),list(np.array(output_avg).flatten())
