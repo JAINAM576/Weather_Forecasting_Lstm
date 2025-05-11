@@ -68,8 +68,8 @@ def temperature_insights(data):
 def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourly"):
         
    if freq=="Hourly":
-        scaler=pkl.load(open(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Hourly\StandardScaler\StandardScaler_hourly1.pkl","rb"))
-        hourly_model=load_model(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Hourly\StandardScaler\temperature_best_Standard_Hourly1.keras")
+        scaler=pkl.load(open(r"Models/Hourly/StandardScaler/StandardScaler_hourly1.pkl","rb"))
+        hourly_model=load_model(r"Models/Hourly/StandardScaler/temperature_best_Standard_Hourly1.keras")
 
         data_for_model=scaler.transform(np.array(data_for_model["temp"].values[:100]).reshape(-1,1))
         data_for_model=data_for_model.reshape(1,100,1)
@@ -88,15 +88,15 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
 
         return  list(np.array(output).flatten())
    elif freq=="Daily":
-        scaler_min=pkl.load(open(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Daily\temperature_best_min\StandardScaler\StandardScaler_min.pkl","rb"))
-        daily_min_model=load_model(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Daily\temperature_best_min\StandardScaler\temperature_best_min_StandardScaler.keras")
-
-        scaler_max=pkl.load(open(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Daily\temperature_best_max\StandardScaler\StandardScaler.pkl","rb"))
-        daily_max_model=load_model(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Daily\temperature_best_max\StandardScaler\temperature_best_max_StandardScaler.keras")
-
-        scaler_avg=pkl.load(open(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Daily\temperature_best_avg\StandardScaler\MinMax_Avg.pkl","rb"))
-        daily_avg_model=load_model(r"C:\Users\Jainam Harsh\OneDrive\Desktop\Weather_forecasting\Models\Daily\temperature_best_avg\StandardScaler\temperature_best_avg.keras")
-
+        scaler_min = pkl.load(open("Models/Daily/temperature_best_min/StandardScaler/StandardScaler_min.pkl", "rb"))
+        daily_min_model = load_model("Models/Daily/temperature_best_min/StandardScaler/temperature_best_min_StandardScaler.keras")
+        
+        scaler_max = pkl.load(open("Models/Daily/temperature_best_max/StandardScaler/StandardScaler.pkl", "rb"))
+        daily_max_model = load_model("Models/Daily/temperature_best_max/StandardScaler/temperature_best_max_StandardScaler.keras")
+        
+        scaler_avg = pkl.load(open("Models/Daily/temperature_best_avg/StandardScaler/MinMax_Avg.pkl", "rb"))
+        daily_avg_model = load_model("Models/Daily/temperature_best_avg/StandardScaler/temperature_best_avg.keras")
+       
         data_for_model_min=scaler_min.transform(np.array(data_for_model["tmin"].values).reshape(-1,1))
         data_for_model_max=scaler_max.transform(np.array(data_for_model["tmax"].values).reshape(-1,1))
         data_for_model_avg=scaler_avg.transform(np.array(data_for_model["tavg"].values).reshape(-1,1))
