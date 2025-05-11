@@ -81,7 +81,8 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
             print(data_for_model)
 
             prediction = hourly_model.predict(np.array(data_for_model).reshape(-1, window_size, 1))
-            
+            prediction = prediction + np.random.normal(0, 0.05)
+
             output.append(prediction)
             data_for_model = np.append(data_for_model[1:], prediction)
 
@@ -116,8 +117,10 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
         
 
             prediction = daily_min_model.predict(np.array(data_for_model_min).reshape(-1, window_size, 1))
+            prediction = prediction + np.random.normal(0, 0.05)
             
             output_min.append(prediction)
+
             data_for_model_min = np.append(data_for_model_min[1:], prediction)
 
         output_max=[]
@@ -125,6 +128,7 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
        
 
             prediction = daily_max_model.predict(np.array(data_for_model_max).reshape(-1, window_size, 1))
+            prediction = prediction + np.random.normal(0, 0.05)
             
             output_max.append(prediction)
             data_for_model_max = np.append(data_for_model_max[1:], prediction)
@@ -133,6 +137,7 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
         for i in range(forecast_duration):
 
             prediction = daily_avg_model.predict(np.array(data_for_model_avg).reshape(-1, window_size, 1))
+            prediction = prediction + np.random.normal(0, 0.05)
             
             output_avg.append(prediction)
             data_for_model_avg = np.append(data_for_model_avg[1:], prediction)
