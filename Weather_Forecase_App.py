@@ -118,7 +118,8 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
 
         return  list(np.array(output).flatten())
    elif freq=="Daily":
-        scaler_min = pkl.load(open("Final_Models/Daily/temp_min/StandardScaler_min.pkl", "rb"))
+        print("Updated Code")
+        scaler_min = pkl.load(open("Final_Models/Daily/temp_min/Standard_Scaler_min.pkl", "rb"))
         daily_min_model = load_model("Final_Models/Daily/temp_min/temperature_min_Standard.keras")
         
         scaler_max = pkl.load(open("Final_Models/Daily/temp_max/StandardScaler.pkl", "rb"))
