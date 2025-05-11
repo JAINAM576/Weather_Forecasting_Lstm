@@ -6,5 +6,7 @@ scikit-learn==1.2.2
 pandas==2.1.4
 meteostat==1.6.8
 streamlit
+geopy==2.4.1
+
 # datetime does not have a __version__ attribute
 # pickle does not have a __version__ attribute
