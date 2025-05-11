@@ -122,10 +122,10 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
         scaler_min = pkl.load(open("Final_Models/Daily/temp_min/Standard_Scaler_min.pkl", "rb"))
         daily_min_model = load_model("Final_Models/Daily/temp_min/temperature_min_Standard.keras")
         
-        scaler_max = pkl.load(open("Final_Models/Daily/temp_max/StandardScaler.pkl", "rb"))
+        scaler_max = pkl.load(open("Final_Models/Daily/temp_max/Standard_Scaler.pkl", "rb"))
         daily_max_model = load_model("Final_Models/Daily/temp_max/temperature_max_Done5_Standard.keras")
         
-        scaler_avg = pkl.load(open("Final_Models/Daily/temp_avg/StandardScaler_avg.pkl", "rb"))
+        scaler_avg = pkl.load(open("Final_Models/Daily/temp_avg/Standard_Scaler_avg.pkl", "rb"))
         daily_avg_model = load_model("Final_Models/Daily/temp_avg/temperature_avg_Standard.keras")
 
         data_for_model.reset_index(inplace=True)
