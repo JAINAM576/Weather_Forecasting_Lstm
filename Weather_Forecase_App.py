@@ -73,6 +73,9 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
 
         data_for_model.reset_index(inplace=True)
         target_column="temp"
+        
+        last_row = data_for_model.iloc[-1]
+        base_date = pd.to_datetime(last_row['time'])
 
         data_for_model=data_for_model[["time",target_column]]
 
@@ -94,11 +97,7 @@ def modelPrediction(data_for_model,forecast_duration,window_size=100,freq="Hourl
 
 
         output = []
-        last_row = data_for_model.iloc[-1]
-
-
-        base_date = pd.to_datetime(last_row['time'])
-
+       
         for i in range(forecast_duration):
             future_datetime = base_date + timedelta(hours=i + 1)
             
