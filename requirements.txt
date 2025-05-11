@@ -7,6 +7,7 @@ pandas==2.1.4
 meteostat==1.6.8
 streamlit
 geopy==2.4.1
+plotly==5.22.0
 
 # datetime does not have a __version__ attribute
 # pickle does not have a __version__ attribute
